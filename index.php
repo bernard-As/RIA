@@ -1,3 +1,75 @@
+<?php 
+
+function generateCsrfToken() {
+    if (empty($_SESSION['csrf_token'])) {
+        $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+    }
+    return $_SESSION['csrf_token'];
+}
+
+// Call this function to get or create a CSRF token
+$csrfToken = generateCsrfToken();
+ini_set('display_errors', 0);
+ini_set('log_errors', 1);
+error_reporting(E_ALL);
+
+
+// Set the Access-Control-Allow-Origin header
+$allowedOrigins = [
+    'http://localhost',
+    'https://api.hcaptcha.com/',
+    'https://newassets.hcaptcha.com ',
+    'https://hcaptcha.com/ '
+];
+
+// Get the origin of the request
+$origin = isset($_SERVER['HTTP_ORIGIN']) ? $_SERVER['HTTP_ORIGIN'] : '';
+
+// Check if the origin is in the list of allowed origins
+if (in_array($origin, $allowedOrigins)) {
+    header("Access-Control-Allow-Origin: $origin");
+    header("Access-Control-Allow-Credentials: true"); // If you need to include credentials
+} else {
+    // Optionally, you can set a default origin or deny the request
+    // header("Access-Control-Allow-Origin: *"); // Allow all (not recommended)
+    // Or simply do nothing to deny the request
+}
+
+// Additional CORS headers (optional but often required)
+header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
+header("Access-Control-Allow-Headers: Content-Type, Authorization");
+header("Access-Control-Max-Age: 86400"); // Cache for 24 hours
+
+// Handle preflight requests
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    exit(); // End the script as no further processing is needed for OPTIONS requests
+}
+
+
+// Define the CSP policy
+$nonce = base64_encode(random_bytes(16));
+$cspPolicy = "default-src 'self' https://newassets.hcaptcha.com https://hcaptcha.com/ https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://api.hcaptcha.com/ https://api.hcaptcha.com/;  " .
+             "script-src 'self' https://cdn.jsdelivr.net https://hcaptcha.com https://newassets.hcaptcha.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://api.hcaptcha.com/; " .
+             "style-src 'self'  https://newassets.hcaptcha.com https://cdn.jsdelivr.net https://hcaptcha.com/ https://fonts.googleapis.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; " .
+             "img-src 'self' data: https://cdn.jsdelivr.net https://hcaptcha.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; " .
+             "font-src 'self' https://cdn.jsdelivr.net https://fonts.gstatic.com/ https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; " .
+             "connect-src 'self' https://apis.example.com https://hcaptcha.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; " .
+             "frame-src 'self' https://hcaptcha.com https://newassets.hcaptcha.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; " . // Added frame-src directive
+             "object-src 'none' https://api.hcaptcha.com/;".
+             "frame-ancestors 'self'; " . // Explicitly define frame-ancestors
+             "form-action 'self' https://api.hcaptcha.com/; " 
+            //  "nonce-$nonce"
+             ;
+
+// Set the CSP header
+header("Content-Security-Policy: $cspPolicy");
+
+// Optionally, you can also set the report-only header for testing purposes
+$cspReportOnlyPolicy = "default-src 'self' https://newassets.hcaptcha.com https://hcaptcha.com https://cdn.jsdelivr.net https://api.hcaptcha.com/; 
+                        report-uri /csp-violation-report-endpoint/";
+header("Content-Security-Policy-Report-Only: $cspReportOnlyPolicy");
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -8,47 +80,7 @@
     <title>Create Items - RIA</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
-    <style>
-        body {
-            font-family: 'Arial', sans-serif;
-        }
-        .hero-section {
-            background: url('path/to/your/image.jpg') no-repeat center center;
-            background-size: cover;
-            color: white;
-            padding: 100px 0;
-            text-align: center;
-        }
-        .feature-icon {
-            font-size: 50px;
-            color: #007bff;
-        }
-        .cta-button {
-            background-color: #007bff;
-            color: white;
-            padding: 12px 30px;
-            border-radius: 30px;
-            text-decoration: none;
-        }
-        .cta-button:hover {
-            background-color: #0056b3;
-        }
-        .feature-section {
-            padding: 60px 0;
-        }
-        .item-form-section {
-            padding: 60px 0;
-            background-color: #f8f9fa;
-        }
-        .item-form-container {
-            max-width: 800px;
-            margin: 0 auto;
-            background-color: white;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
-        }
-    </style>
+    <link href="includes/style.css" rel="stylesheet">
 </head>
 
 <body>

@@ -93,7 +93,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                 <div class="alert alert-success"><?php echo $success; ?></div>
                             <?php endif; ?>
 
-                            <form class="user" method="POST" action="register.php" >
+                            <form class="user" method="POST" action="register.php" csrf_token=<?php echo htmlspecialchars($csrfToken); ?>>
+                                <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrfToken); ?>">
                                 <div class="form-group row">
                                     <div class="col-sm-6 mb-3 mb-sm-0">
                                         <input type="text" class="form-control form-control-user" id="exampleFirstName"

@@ -31,6 +31,7 @@ if (!$user) {
 
 // Update user details
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    
     $firstname = htmlspecialchars(trim($_POST['firstname']));
     $lastname = htmlspecialchars(trim($_POST['lastname']));
     $email = htmlspecialchars(trim($_POST['email']));
@@ -129,3 +130,5 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 </body>
 </html>
+ES_6186f67705394ad1a39f38d7dec0ef2e
+site 9d389074-6564-481c-8198-2ade27a8211c
